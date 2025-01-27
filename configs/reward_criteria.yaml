@@ -1,0 +1,14 @@
+llm_reward_criteria:
+  dimensions:
+    - name: accuracy
+      weight: 0.4
+      description: 答案的准确性 - 回答是否与参考答案在关键信息和结论上一致
+    - name: logic
+      weight: 0.3
+      description: 逻辑性和连贯性 - 论述是否清晰、连贯，推理过程是否合理
+    - name: completeness
+      weight: 0.2
+      description: 完整性 - 是否涵盖了问题的所有重要方面
+    - name: clarity
+      weight: 0.1
+      description: 表达清晰度 - 语言是否清晰、专业、易懂
