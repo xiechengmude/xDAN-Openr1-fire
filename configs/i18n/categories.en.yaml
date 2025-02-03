@@ -1,0 +1,38 @@
+# English Category Configuration
+base_dimensions:
+  industries:
+    - name: Basic Research
+      tags: [theoretical_physics, molecular_biology, materials_science]
+    - name: Advanced Manufacturing
+      tags: [semiconductors, industrial_robotics, 3d_printing]
+    - name: Modern Agriculture
+      tags: [precision_farming, vertical_farming, gene_editing_crops]
+    - name: Digital Services
+      tags: [cloud_computing, blockchain, metaverse]
+    - name: Life Sciences
+      tags: [gene_therapy, brain_computer_interface, anti_aging_research]
+
+  scenarios:
+    - name: Daily Life
+      tags: [smart_home, personal_health, social_network]
+    - name: Professional
+      tags: [surgical_assistance, financial_modeling, legal_drafting]
+    - name: Extreme
+      tags: [space_exploration, nuclear_plant, polar_research]
+
+  capabilities:
+    - name: Cognitive
+      tags: [logical_reasoning, cross_modal_association, knowledge_transfer]
+    - name: Interactive
+      tags: [real_time_translation, emotion_recognition, neural_interface]
+    - name: Creative
+      tags: [scientific_hypothesis, artistic_creation, business_innovation]
+
+integration_rules:
+  cross_dimension_mapping:
+    - industry→scenario: auto_matrix
+    - capability→industry: adaptive_engine
+
+update_policy:
+  versioning: semantic
+  refresh_interval: 72h

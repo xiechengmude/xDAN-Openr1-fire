@@ -1,0 +1,206 @@
+# AGI场景分类配置表 v1.0
+base_dimensions:
+  # 行业维度（按领域细分）
+  industries:
+    academic_research:
+      name: 基础科研
+      categories:
+        physical_sciences:
+          name: 物理科学
+          tags: [理论物理, 量子力学, 天体物理, 粒子物理]
+        life_sciences:
+          name: 生命科学
+          tags: [分子生物学, 基因组学, 神经科学, 微生物学]
+        material_sciences:
+          name: 材料科学
+          tags: [纳米材料, 智能材料, 复合材料, 生物材料]
+        earth_sciences:
+          name: 地球科学
+          tags: [气候变化, 地质学, 海洋学, 大气科学]
+        
+    advanced_manufacturing:
+      name: 先进制造
+      categories:
+        semiconductor:
+          name: 半导体
+          tags: [芯片设计, 晶圆制造, 封装测试, 光刻技术]
+        robotics:
+          name: 机器人
+          tags: [工业机器人, 协作机器人, 服务机器人, 医疗机器人]
+        additive_manufacturing:
+          name: 增材制造
+          tags: [3D打印, 快速成型, 材料喷射, 选择性激光烧结]
+        smart_factory:
+          name: 智能工厂
+          tags: [工业物联网, 预测性维护, 数字孪生, 柔性制造]
+
+    modern_agriculture:
+      name: 现代农业
+      categories:
+        precision_farming:
+          name: 精准农业
+          tags: [卫星导航, 变量施肥, 农业传感, 产量监测]
+        vertical_farming:
+          name: 垂直农场
+          tags: [室内种植, 水培技术, 光照控制, 环境调节]
+        biotechnology:
+          name: 生物技术
+          tags: [基因编辑, 种子改良, 生物农药, 土壤改良]
+        smart_agriculture:
+          name: 智慧农业
+          tags: [农业机器人, 灌溉系统, 病虫害预警, 农产品溯源]
+
+    digital_services:
+      name: 数字服务
+      categories:
+        cloud_computing:
+          name: 云计算
+          tags: [IaaS, PaaS, SaaS, 边缘计算]
+        blockchain:
+          name: 区块链
+          tags: [智能合约, DeFi, NFT, DAO]
+        metaverse:
+          name: 元宇宙
+          tags: [虚拟现实, 增强现实, 数字孪生, 虚拟社交]
+        ai_services:
+          name: 人工智能服务
+          tags: [机器学习, 深度学习, 自然语言处理, 计算机视觉]
+
+    life_health:
+      name: 生命健康
+      categories:
+        gene_therapy:
+          name: 基因治疗
+          tags: [基因编辑, 细胞治疗, 靶向治疗, 个性化医疗]
+        brain_interface:
+          name: 脑机接口
+          tags: [神经调控, 意念控制, 感知增强, 康复训练]
+        longevity_research:
+          name: 抗衰老研究
+          tags: [衰老机制, 寿命延长, 器官再生, 健康监测]
+        precision_medicine:
+          name: 精准医疗
+          tags: [基因检测, AI诊断, 药物筛选, 远程医疗]
+
+  # 场景维度（按应用场景细分）
+  scenarios:
+    daily_life:
+      name: 日常场景
+      categories:
+        smart_home:
+          name: 智能家居
+          tags: [环境控制, 安防监控, 能源管理, 家电控制]
+        health_management:
+          name: 健康管理
+          tags: [运动追踪, 饮食建议, 睡眠监测, 心理健康]
+        social_networking:
+          name: 社交网络
+          tags: [即时通讯, 内容分享, 社群管理, 兴趣匹配]
+        entertainment:
+          name: 娱乐休闲
+          tags: [游戏互动, 媒体推荐, 虚拟体验, 文化艺术]
+
+    professional:
+      name: 专业场景
+      categories:
+        medical:
+          name: 医疗场景
+          tags: [手术辅助, 影像诊断, 用药指导, 病历管理]
+        financial:
+          name: 金融场景
+          tags: [风险评估, 投资分析, 交易执行, 合规审查]
+        legal:
+          name: 法律场景
+          tags: [案例分析, 文书生成, 合同审查, 法规解读]
+        education:
+          name: 教育场景
+          tags: [个性化学习, 能力评估, 课程规划, 互动教学]
+
+    extreme:
+      name: 极端场景
+      categories:
+        space:
+          name: 太空探索
+          tags: [深空探测, 卫星操控, 空间站维护, 行星采样]
+        nuclear:
+          name: 核能应用
+          tags: [核电站运维, 辐射监测, 废料处理, 安全控制]
+        deep_sea:
+          name: 深海作业
+          tags: [海底勘探, 资源开采, 生态监测, 设备维护]
+        disaster:
+          name: 灾害应对
+          tags: [预警预测, 救援规划, 损失评估, 恢复重建]
+
+  # 功能维度（按核心能力细分）
+  capabilities:
+    cognitive:
+      name: 认知能力
+      categories:
+        reasoning:
+          name: 推理能力
+          tags: [逻辑分析, 因果推断, 规律发现, 决策优化]
+        learning:
+          name: 学习能力
+          tags: [知识获取, 技能迁移, 经验总结, 适应进化]
+        memory:
+          name: 记忆能力
+          tags: [信息存储, 快速检索, 关联记忆, 长期记忆]
+        understanding:
+          name: 理解能力
+          tags: [语义理解, 场景理解, 意图理解, 上下文理解]
+
+    interactive:
+      name: 交互能力
+      categories:
+        language:
+          name: 语言交互
+          tags: [多语言翻译, 自然对话, 语音识别, 文本生成]
+        perception:
+          name: 感知交互
+          tags: [视觉识别, 听觉分析, 触觉反馈, 多模态融合]
+        emotion:
+          name: 情感交互
+          tags: [情绪识别, 情感表达, 个性适配, 社交互动]
+        interface:
+          name: 接口交互
+          tags: [脑机接口, 手势控制, 眼动追踪, 体感交互]
+
+    creative:
+      name: 创造能力
+      categories:
+        scientific:
+          name: 科学创造
+          tags: [假设生成, 实验设计, 理论构建, 发现创新]
+        artistic:
+          name: 艺术创造
+          tags: [视觉创作, 音乐创作, 文学创作, 设计创新]
+        engineering:
+          name: 工程创造
+          tags: [产品设计, 系统架构, 算法优化, 解决方案]
+        business:
+          name: 商业创造
+          tags: [商业模式, 市场策略, 价值创新, 服务设计]
+
+# 维度间关联规则
+integration_rules:
+  mappings:
+    - type: industry_to_scenario
+      description: 行业场景映射关系
+      rules: [自动关联矩阵, 场景适配器]
+    - type: capability_to_industry
+      description: 能力行业映射关系
+      rules: [能力需求分析, 行业特化适配]
+    - type: scenario_to_capability
+      description: 场景能力映射关系
+      rules: [场景需求分析, 能力组合优化]
+
+# 版本控制
+version_control:
+  current_version: 1.0.0
+  last_updated: "2025-02-01"
+  update_frequency: monthly
+  validation_rules:
+    - schema_validation
+    - cross_reference_check
+    - completeness_verification

@@ -1,0 +1,75 @@
+# 核心领域分类框架
+base_domains:
+  # 学术知识
+  academic:
+    name:
+      zh: 学术知识
+      en: Academic Knowledge
+    subcategories:
+      natural_science:
+        name: {zh: 自然科学, en: Natural Sciences}
+        tags: [physics, chemistry, biology, astronomy]
+      social_science:
+        name: {zh: 社会科学, en: Social Sciences}
+        tags: [economics, psychology, sociology]
+
+  # 专业应用
+  professional:
+    name:
+      zh: 专业应用
+      en: Professional Applications
+    subcategories:
+      medical:
+        name: {zh: 医疗健康, en: Healthcare}
+        tags: [diagnosis, drug_discovery, medical_imaging]
+      finance:
+        name: {zh: 金融经济, en: Finance}
+        tags: [quantitative_analysis, risk_management, algorithmic_trading]
+
+  # 技术实现
+  technical:
+    name:
+      zh: 技术实现
+      en: Technical Implementation
+    subcategories:
+      code_generation:
+        name: {zh: 代码生成, en: Code Generation}
+        tags: [full_stack, smart_contract, debugger]
+      hardware_control:
+        name: {zh: 硬件控制, en: Hardware Control}
+        tags: [robotics, IoT, embedded_systems]
+
+  # 多模态
+  multimodal:
+    name:
+      zh: 多模态理解
+      en: Multimodal Understanding
+    subcategories:
+      vision:
+        name: {zh: 视觉解析, en: Visual Perception}
+        tags: [satellite_imagery, medical_imaging, scene_understanding]
+      audio:
+        name: {zh: 听觉理解, en: Audio Understanding}
+        tags: [speech_recognition, emotion_detection, sound_classification]
+
+  # 伦理安全
+  ethics:
+    name:
+      zh: 伦理安全
+      en: Ethics & Safety
+    subcategories:
+      alignment:
+        name: {zh: 价值对齐, en: Value Alignment}
+        tags: [ethical_reasoning, cultural_adaptation, bias_detection]
+      security:
+        name: {zh: 安全防护, en: Security}
+        tags: [adversarial_testing, content_filtering, privacy_preserving]
+
+# 动态更新配置
+update_policy:
+  versioning: semantic
+  refresh_interval: 72h
+  validation:
+    - schema_check
+    - expert_review
+    - cross_domain_consistency

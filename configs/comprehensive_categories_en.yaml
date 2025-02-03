@@ -1,0 +1,204 @@
+# Comprehensive Scene Classification Configuration Table v2.0
+
+base_dimensions:
+  # 30 Major Industry Classifications
+  industries:
+    # Technology Innovation Industry
+    - Artificial Intelligence and Machine Learning
+    - Semiconductors and Integrated Circuits
+    - Quantum Computing and Communication
+    - Biotechnology and Genetic Engineering
+    - New Energy and Clean Technology
+
+    # Information Technology Industry
+    - Cloud Computing and Data Centers
+    - Cybersecurity and Privacy Protection
+    - Internet of Things and Smart Devices
+    - Blockchain and Distributed Technology
+    - Software Development and Services
+
+    # Manufacturing Industry
+    - Smart Manufacturing and Industry 4.0
+    - Aerospace Engineering
+    - New Material Research and Application
+    - Automotive and Intelligent Transportation
+    - Robotics and Automation
+
+    # Life Sciences
+    - Medical Devices and Equipment
+    - Biopharmaceutical Research and Development
+    - Health Management and Elderly Care
+    - Brain Science and Neural Engineering
+    - Gene Therapy and Precision Medicine
+
+    # Modern Services Industry
+    - Financial Technology and Services
+    - Education Training and Development
+    - Cultural Creativity and Entertainment
+    - E-commerce and Retail
+    - Logistics and Supply Chain
+
+    # Sustainable Development
+    - Environmental Protection and Governance
+    - Smart City Construction
+    - Renewable Energy Utilization
+    - Agricultural Technology and Food
+    - Marine Resource Development
+
+    # Frontier Technologies
+    - Metaverse and Virtual Reality
+    - Synthetic Biology
+    - Web3.0 and Decentralization
+    - Brain-Computer Interface
+    - Advanced Computing Architecture
+
+  # 60 Application Scenarios
+  scenarios:
+    # Daily Life (15)
+    daily_life:
+      - Smart Home Control
+      - Personal Health Monitoring
+      - Online Education and Learning
+      - Social Media Interaction
+      - Mobile Payment Transactions
+      - Smart Travel Navigation
+      - Entertainment Content Recommendation
+      - Home Security Monitoring
+      - Smart Appliance Management
+      - Personal Assistant Services
+      - Remote Work Collaboration
+      - Life Service Booking
+      - Healthy Diet Guidance
+      - Fitness Planning
+      - Home Energy Management
+
+    # Professional Fields (25)
+    professional:
+      - Medical Diagnosis Assistance
+      - Surgical Planning Simulation
+      - Drug Research and Development Analysis
+      - Financial Risk Assessment
+      - Investment Portfolio Management
+      - Legal Document Generation
+      - Patent Analysis and Retrieval
+      - Teaching Course Planning
+      - Student Ability Assessment
+      - Industrial Equipment Maintenance
+      - Product Quality Control
+      - Supply Chain Optimization
+      - Market Trend Analysis
+      - Customer Behavior Prediction
+      - Targeted Advertising
+      - Urban Traffic Dispatch
+      - Environmental Pollution Monitoring
+      - Weather Forecasting Analysis
+      - Crop Monitoring
+      - Geological Exploration Analysis
+      - Architectural Design Planning
+      - Cybersecurity Protection
+      - Data Privacy Protection
+      - Energy Dispatch Optimization
+      - Resource Allocation Planning
+
+    # Special Scenarios (20)
+    special:
+      - Space Exploration Missions
+      - Deep-sea Resource Exploration
+      - Nuclear Power Plant Monitoring
+      - Plateau Scientific Research
+      - Polar Environment Operations
+      - Disaster Emergency Response
+      - Cultural Heritage Protection
+      - Defense Military Exercise
+      - Deep Fake Detection
+      - Public Opinion Analysis
+      - Carbon Emission Monitoring
+      - Biodiversity Protection
+      - Extreme Weather Response
+      - Disease Prevention Control
+      - Food Safety Traceability
+      - Digital Twin Simulation
+      - Smart Elderly Care
+      - Intelligent Traffic Control
+      - Urban Safety Warning
+      - Public Health Monitoring
+
+  # 50 Core Capabilities
+  capabilities:
+    # Cognitive Abilities (15)
+    cognitive:
+      - Logical Reasoning Analysis
+      - Knowledge Graph Construction
+      - Causal Relationship Inference
+      - Pattern Recognition
+      - Concept Abstraction and Induction
+      - Decision Optimization and Evaluation
+      - Knowledge Transfer Application
+      - Multi-task Collaborative Learning
+      - Spatiotemporal Relationship Understanding
+      - Semantic Understanding Analysis
+      - Contextual Reasoning
+      - Anomaly Detection and Identification
+      - Knowledge Update and Evolution
+      - Memory Storage and Retrieval
+      - Cognitive Bias Correction
+
+    # Perceptual Interaction (20)
+    perceptual:
+      - Computer Vision Processing
+      - Natural Language Understanding
+      - Speech Recognition and Conversion
+      - Multimodal Information Fusion
+      - Gesture Recognition
+      - Facial Expression and Emotion Recognition
+      - Biometric Recognition
+      - Scene 3D Reconstruction
+      - Real-time Target Tracking
+      - Image Semantic Segmentation
+      - Voiceprint Recognition and Analysis
+      - Tactile Perception Feedback
+      - Spatial Positioning and Navigation
+      - Augmented Reality Interaction
+      - Virtual Reality Immersion
+      - Brain-Computer Interface Control
+      - Multi-language Real-time Translation
+      - Human-Computer Dialogue Interaction
+      - Motion Capture
+      - Environmental Perception and Adaptation
+
+    # Creative Abilities (15)
+    creative:
+      - Scientific Hypothesis Generation
+      - Creative Design Conception
+      - Artwork Creation
+      - Music Composition
+      - Literary Writing
+      - Product Innovation Design
+      - Solution Optimization
+      - Business Model Innovation
+      - Technology Path Planning
+      - Experimental Scheme Design
+      - Teaching Course Innovation
+      - Game Level Design
+      - Marketing Strategy Innovation
+      - Service Process Optimization
+      - Interaction Experience Design
+
+# Dimension Integration Rules
+integration_rules:
+  - type: industry_to_scenario
+    description: Industry-Scenario Mapping
+    method: matrix_mapping
+
+  - type: scenario_to_capability
+    description: Scenario-Capability Requirements
+    method: requirement_analysis
+
+  - type: capability_to_industry
+    description: Capability-Industry Support
+    method: capability_matching
+
+# Version Information
+version_info:
+  version: 2.0.0
+  last_updated: "2025-02-01"
