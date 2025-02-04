@@ -40,6 +40,17 @@ class GRPOConfig(trl.GRPOConfig):
     )
     overwrite_hub_revision: bool = field(default=False, metadata={"help": "Whether to overwrite the Hub revision."})
     push_to_hub_revision: bool = field(default=False, metadata={"help": "Whether to push to a Hub revision/branch."})
+    
+    # vLLM specific parameters
+    tensor_parallel_size: Optional[int] = field(
+        default=None, metadata={"help": "Number of GPUs to use for tensor parallelism in vLLM"}
+    )
+    gpu_memory_utilization: Optional[float] = field(
+        default=0.90, metadata={"help": "Fraction of GPU memory to be used by vLLM"}
+    )
+    max_model_len: Optional[int] = field(
+        default=8192, metadata={"help": "Maximum sequence length for vLLM"}
+    )
 
 
 @dataclass

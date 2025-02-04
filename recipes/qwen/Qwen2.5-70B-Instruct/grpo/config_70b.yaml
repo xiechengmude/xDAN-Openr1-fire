@@ -1,0 +1,54 @@
+output_dir: ./Qwen2.5-70B-Instruct-GRPO
+model_name_or_path: Qwen/Qwen2.5-70B-Instruct
+dataset_name: deepseek/deepseek-math
+dataset_config: v1.0
+dataset_train_split: train
+dataset_test_split: test
+
+# Training parameters
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+num_train_epochs: 1
+learning_rate: 2.0e-5
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+weight_decay: 0.0
+max_grad_norm: 1.0
+neftune_noise_alpha: 5
+
+# GRPO parameters
+max_prompt_length: 2048
+max_completion_length: 512
+num_generations: 8
+temperature: 0.7
+beta: 0.1
+
+# vLLM parameters
+use_vllm: true
+tensor_parallel_size: 4  # Use 4 GPUs for model parallel
+gpu_memory_utilization: 0.90
+max_model_len: 8192
+vllm_device: "remote"  # Use remote vLLM service
+vllm_api_base: "http://your-remote-server:8000/v1"  # Replace with your remote vLLM server address
+vllm_model_name: "Qwen/Qwen2.5-70B-Instruct"
+
+# Evaluation and logging
+evaluation_strategy: steps
+eval_steps: 100
+save_strategy: steps
+save_steps: 100
+save_total_limit: 10
+logging_steps: 10
+report_to: wandb
+
+# Optimizer
+optim: paged_adamw_32bit
+
+# # LoRA parameters
+# use_peft: true
+# lora_r: 32
+# lora_alpha: 32
+# lora_dropout: 0.05
+# lora_target_modules:
+#   - c_attn
+#   - c_proj

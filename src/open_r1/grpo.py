@@ -133,6 +133,11 @@ def main(script_args, training_args, model_args):
         f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
         + f" distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
     )
+    if training_args.use_vllm:
+        logger.info(f"vLLM config: tensor_parallel_size={training_args.tensor_parallel_size}, "
+                   f"gpu_memory_utilization={training_args.gpu_memory_utilization}, "
+                   f"max_model_len={training_args.max_model_len}")
+    
     logger.info(f"Model parameters {model_args}")
     logger.info(f"Script parameters {script_args}")
     logger.info(f"Data parameters {training_args}")
