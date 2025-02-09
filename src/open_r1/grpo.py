@@ -63,30 +63,36 @@ class CustomGRPOTrainer(GRPOTrainer):
         use_vllm = kwargs.get('use_vllm', False)
         vllm_device = kwargs.get('vllm_device', f'cuda:{4 + local_rank}')  # 根据 local_rank 分配 GPU
         
-        # 从 kwargs 中移除 vLLM 相关参数，避免父类处理
-        kwargs.pop('use_vllm', None)
-        kwargs.pop('vllm_device', None)
+        # 完全禁用父类的 vLLM 初始化
+        kwargs['use_vllm'] = False  # 确保父类不会初始化 vLLM
+        kwargs.pop('vllm_device', None)  # 移除 vLLM 设备参数
         
         # 调用父类初始化
         super().__init__(*args, **kwargs)
         
         # 如果需要使用 vLLM，我们自己初始化
         if use_vllm:  # 移除 self.accelerator.is_main_process 检查，让所有进程都初始化
-            self.llm = LLM(
-                model=self.model.name_or_path,
-                device=vllm_device,  # 使用保存的参数
-                tensor_parallel_size=tensor_parallel_size,
-                max_model_len=2048,
-                trust_remote_code=True,
-                enforce_eager=True,
-                max_num_batched_tokens=4096,
-                max_num_seqs=128,
-                enable_lora=True,
-                max_loras=16,
-                max_lora_rank=64,
-                max_cpu_loras=16,
-                gpu_memory_utilization=0.9,
-            )
+            try:
+                print(f"[Rank {local_rank}] Initializing vLLM with device={vllm_device}, tensor_parallel_size={tensor_parallel_size}")
+                self.llm = LLM(
+                    model=self.model.name_or_path,
+                    device=vllm_device,  # 使用保存的参数
+                    tensor_parallel_size=tensor_parallel_size,
+                    max_model_len=2048,
+                    trust_remote_code=True,
+                    enforce_eager=True,
+                    max_num_batched_tokens=4096,
+                    max_num_seqs=128,
+                    enable_lora=True,
+                    max_loras=16,
+                    max_lora_rank=64,
+                    max_cpu_loras=16,
+                    gpu_memory_utilization=0.9,
+                )
+                print(f"[Rank {local_rank}] Successfully initialized vLLM")
+            except Exception as e:
+                print(f"[Rank {local_rank}] Failed to initialize vLLM: {str(e)}")
+                raise
         
         # 恢复 use_vllm 标志
         self.use_vllm = use_vllm
