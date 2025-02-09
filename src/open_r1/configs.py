@@ -49,16 +49,16 @@ class GRPOConfig(trl.GRPOConfig):
             "help": "The fraction of GPU memory to be used by vLLM."
         },
     )
-    vllm_devices: str = field(
-        default="4,5,6,7",
-        metadata={
-            "help": "Comma separated list of GPU devices to use for vLLM, e.g. '4,5,6,7'. This is needed when running with accelerate launch to ensure vLLM can see all required GPUs."
-        },
-    )
     vllm_tensor_parallel_size: int = field(
         default=1,
         metadata={
             "help": "Number of GPUs to use for tensor parallelism in vLLM."
+        },
+    )
+    vllm_device: str = field(
+        default="cuda:4",
+        metadata={
+            "help": "The device to use for vLLM. This should be the first GPU device in your tensor parallel setup."
         },
     )
 

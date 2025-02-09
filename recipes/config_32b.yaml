@@ -14,8 +14,9 @@ num_processes: 4
 # GRPO trainer config
 bf16: true
 use_vllm: true
-vllm_gpu_memory_utilization: 0.9  # 如果出现 OOM 可以调低这个值
-vllm_tensor_parallel_size: 4  # 设置 vLLM 使用 4 卡
+vllm_gpu_memory_utilization: 0.9
+vllm_tensor_parallel_size: 4  # 使用 4 张卡并行
+vllm_device: "cuda:4"  # 从第 5 张卡开始，会使用 4,5,6,7 这 4 张卡
 
 # Training settings
 do_eval: true

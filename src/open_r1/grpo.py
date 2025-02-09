@@ -48,18 +48,20 @@ class CustomGRPOTrainer(GRPOTrainer):
                 try:
                     gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
                     tensor_parallel_size = self.args.vllm_tensor_parallel_size
-                    devices = [int(x.strip()) for x in self.args.vllm_devices.split(',')]
+                    device = self.args.vllm_device
                     
-                    # 验证设备数量
-                    assert len(devices) == tensor_parallel_size, \
-                        f"Number of devices ({len(devices)}) must match tensor_parallel_size ({tensor_parallel_size})"
+                    # 获取基础设备 ID
+                    base_device_id = int(device.split(':')[1])
+                    # 生成所有设备 ID
+                    devices = list(range(base_device_id, base_device_id + tensor_parallel_size))
                     
                     logger.info(f"Initializing vLLM with devices {devices}")
                     
                     self.llm = LLM(
                         model=self.model.name_or_path,
                         gpu_memory_utilization=gpu_memory_utilization,
-                        tensor_parallel_devices=devices,  # 指定使用哪些 GPU
+                        tensor_parallel_size=tensor_parallel_size,
+                        tensor_parallel_devices=devices,
                         max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
                         trust_remote_code=True,
                     )
