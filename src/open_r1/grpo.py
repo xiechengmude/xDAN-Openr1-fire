@@ -42,25 +42,45 @@ logger = logging.getLogger(__name__)
 
 class CustomGRPOTrainer(GRPOTrainer):
     def __init__(self, *args, **kwargs):
-        if kwargs.get('use_vllm', False):
-            # 在父类初始化 vLLM 之前设置必要的环境变量
-            tensor_parallel_size = kwargs.get('vllm_tensor_parallel_size', 4)
-            if dist.is_initialized():
-                # 确保 world_size 与 tensor_parallel_size 匹配
-                world_size = dist.get_world_size()
-                if world_size != tensor_parallel_size:
-                    logger.warning(f"world_size ({world_size}) does not match tensor_parallel_size ({tensor_parallel_size})")
-                
-                local_rank = kwargs.get('local_process_index', 0)
-                os.environ['RANK'] = str(local_rank)
-                os.environ['WORLD_SIZE'] = str(tensor_parallel_size)  # 使用 tensor_parallel_size 作为 world_size
-                os.environ['LOCAL_RANK'] = str(local_rank)
-                os.environ['MASTER_ADDR'] = '127.0.0.1'
-                os.environ['MASTER_PORT'] = '29500'
-                logger.info(f"Setting up vLLM environment with rank={local_rank}, world_size={tensor_parallel_size}")
+        # 禁用父类的 vLLM 初始化
+        use_vllm = kwargs.pop('use_vllm', False)
         
-        # 调用父类初始化，让它处理 vLLM 的初始化
+        # 先调用父类初始化，但不初始化 vLLM
         super().__init__(*args, **kwargs)
+        
+        # 如果需要使用 vLLM，我们自己初始化
+        if use_vllm and self.accelerator.is_main_process:
+            try:
+                tensor_parallel_size = kwargs.get('vllm_tensor_parallel_size', 4)
+                device = kwargs.get('vllm_device', 'cuda:4')
+                
+                # 设置 vLLM 的分布式环境
+                if dist.is_initialized():
+                    local_rank = kwargs.get('local_process_index', 0)
+                    os.environ['RANK'] = str(local_rank)
+                    os.environ['WORLD_SIZE'] = str(tensor_parallel_size)
+                    os.environ['LOCAL_RANK'] = str(local_rank)
+                    os.environ['MASTER_ADDR'] = '127.0.0.1'
+                    os.environ['MASTER_PORT'] = '29500'
+                    logger.info(f"Setting up vLLM environment with rank={local_rank}, world_size={tensor_parallel_size}")
+                
+                # 初始化 vLLM
+                self.llm = LLM(
+                    model=self.model.name_or_path,
+                    device=device,
+                    tensor_parallel_size=tensor_parallel_size,
+                    gpu_memory_utilization=kwargs.get('vllm_gpu_memory_utilization', 0.9),
+                    max_model_len=self.args.max_prompt_length + self.args.max_completion_length,
+                    trust_remote_code=True
+                )
+                logger.info("Successfully initialized vLLM")
+                
+            except Exception as e:
+                logger.error(f"Failed to initialize vLLM: {str(e)}")
+                raise
+        
+        # 恢复 use_vllm 标志
+        self.use_vllm = use_vllm
 
     def __del__(self):
         # 清理分布式环境
