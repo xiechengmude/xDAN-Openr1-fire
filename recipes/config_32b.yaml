@@ -15,7 +15,7 @@ num_processes: 4
 bf16: true
 use_vllm: true
 vllm_gpu_memory_utilization: 0.9  # 如果出现 OOM 可以调低这个值
-vllm_tensor_parallel_size: 4  # 使用4卡并行
+vllm_tensor_parallel_size: 4  # 设置 vLLM 使用 4 卡
 
 # Training settings
 do_eval: true

@@ -42,28 +42,33 @@ logger = logging.getLogger(__name__)
 class CustomGRPOTrainer(GRPOTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.use_vllm and self.accelerator.is_main_process:
-            try:
-                # 使用 accelerate 的分布式环境
-                gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
-                tensor_parallel_size = self.args.vllm_tensor_parallel_size
-                
-                # 确保有足够的 GPU
-                assert torch.cuda.device_count() >= tensor_parallel_size, \
-                    f"Requested {tensor_parallel_size} GPUs but only {torch.cuda.device_count()} available"
-                
-                logger.info(f"Initializing vLLM with {tensor_parallel_size} GPUs")
-                self.llm = LLM(
-                    model=self.model.name_or_path,
-                    gpu_memory_utilization=gpu_memory_utilization,
-                    tensor_parallel_size=tensor_parallel_size,
-                    max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
-                    trust_remote_code=True,
-                )
-                logger.info(f"Successfully initialized vLLM with tensor_parallel_size={tensor_parallel_size}")
-            except Exception as e:
-                logger.error(f"Failed to initialize vLLM: {str(e)}")
-                raise
+        if self.use_vllm:
+            # 只在主进程初始化 vLLM
+            if self.accelerator.is_main_process:
+                try:
+                    gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
+                    tensor_parallel_size = self.args.vllm_tensor_parallel_size
+                    
+                    # 确保有足够的 GPU
+                    assert torch.cuda.device_count() >= tensor_parallel_size, \
+                        f"Requested {tensor_parallel_size} GPUs but only {torch.cuda.device_count()} available"
+                    
+                    logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}")
+                    logger.info(f"CUDA devices: {[torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]}")
+                    
+                    self.llm = LLM(
+                        model=self.model.name_or_path,
+                        gpu_memory_utilization=gpu_memory_utilization,
+                        tensor_parallel_size=tensor_parallel_size,
+                        max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
+                        trust_remote_code=True,
+                    )
+                    logger.info("Successfully initialized vLLM")
+                except Exception as e:
+                    logger.error(f"Failed to initialize vLLM: {str(e)}")
+                    raise
+            # 等待主进程初始化完成
+            self.accelerator.wait_for_everyone()
             
     def __del__(self):
         # 清理分布式环境
