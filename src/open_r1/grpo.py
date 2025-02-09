@@ -53,18 +53,22 @@ class CustomGRPOTrainer(GRPOTrainer):
         if "MASTER_PORT" not in os.environ:
             os.environ["MASTER_PORT"] = "29500"
 
-        # 禁用父类的 vLLM 初始化
-        use_vllm = kwargs.pop('use_vllm', False)
+        # 保存 vLLM 相关参数
+        use_vllm = kwargs.get('use_vllm', False)
+        vllm_device = kwargs.get('vllm_device', 'cuda:4')
+        
+        # 从 kwargs 中移除 vLLM 相关参数，避免父类处理
+        kwargs.pop('use_vllm', None)
+        kwargs.pop('vllm_device', None)
         
         # 调用父类初始化
         super().__init__(*args, **kwargs)
         
         # 如果需要使用 vLLM，我们自己初始化
         if use_vllm and self.accelerator.is_main_process:
-            device = kwargs.get('vllm_device', 'cuda:4')  # 默认从 cuda:4 开始
             self.llm = LLM(
                 model=self.model.name_or_path,
-                device=device,
+                device=vllm_device,  # 使用保存的参数
                 tensor_parallel_size=tensor_parallel_size,
                 max_model_len=2048,
                 trust_remote_code=True,
