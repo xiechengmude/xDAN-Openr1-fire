@@ -53,6 +53,13 @@ class CustomGRPOTrainer(GRPOTrainer):
                 base_device_id = int(device.split(':')[1])
                 devices = list(range(base_device_id, base_device_id + tensor_parallel_size))
                 
+                # 设置 CUDA_VISIBLE_DEVICES 来限制 vLLM 只能看到指定的 GPU
+                os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(map(str, devices))
+                
+                # 确保我们在正确的设备上
+                if torch.cuda.current_device() != base_device_id:
+                    torch.cuda.set_device(base_device_id)
+                
                 logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}, devices={devices}")
                 
                 self.llm = LLM(
