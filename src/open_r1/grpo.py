@@ -36,6 +36,7 @@ from open_r1.utils.callbacks import get_callbacks
 from trl import GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
 from vllm import LLM  # 添加 vLLM 导入
 import torch.distributed as dist
+from vllm.distributed.parallel_state import initialize_model_parallel
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +49,11 @@ class CustomGRPOTrainer(GRPOTrainer):
                 tensor_parallel_size = self.args.vllm_tensor_parallel_size
                 device = self.args.vllm_device
                 
-                # 获取基础设备 ID
+                # 获取基础设备 ID 并生成设备列表
                 base_device_id = int(device.split(':')[1])
-                # 生成所有设备 ID
                 devices = list(range(base_device_id, base_device_id + tensor_parallel_size))
                 
-                logger.info(f"Initializing vLLM with devices {devices}")
+                logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}, devices={devices}")
                 
                 self.llm = LLM(
                     model=self.model.name_or_path,
@@ -70,7 +70,7 @@ class CustomGRPOTrainer(GRPOTrainer):
             
     def __del__(self):
         # 清理分布式环境
-        if self.use_vllm and self.accelerator.is_main_process and dist.is_initialized():
+        if self.use_vllm and dist.is_initialized():
             dist.destroy_process_group()
 
 
