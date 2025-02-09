@@ -46,85 +46,22 @@ class CustomGRPOTrainer(GRPOTrainer):
             # 在父类初始化 vLLM 之前设置必要的环境变量
             tensor_parallel_size = kwargs.get('vllm_tensor_parallel_size', 4)
             if dist.is_initialized():
+                # 确保 world_size 与 tensor_parallel_size 匹配
+                world_size = dist.get_world_size()
+                if world_size != tensor_parallel_size:
+                    logger.warning(f"world_size ({world_size}) does not match tensor_parallel_size ({tensor_parallel_size})")
+                
                 local_rank = kwargs.get('local_process_index', 0)
                 os.environ['RANK'] = str(local_rank)
-                os.environ['WORLD_SIZE'] = str(tensor_parallel_size)
+                os.environ['WORLD_SIZE'] = str(tensor_parallel_size)  # 使用 tensor_parallel_size 作为 world_size
                 os.environ['LOCAL_RANK'] = str(local_rank)
                 os.environ['MASTER_ADDR'] = '127.0.0.1'
                 os.environ['MASTER_PORT'] = '29500'
                 logger.info(f"Setting up vLLM environment with rank={local_rank}, world_size={tensor_parallel_size}")
         
+        # 调用父类初始化，让它处理 vLLM 的初始化
         super().__init__(*args, **kwargs)
-        
-        if self.use_vllm:
-            try:
-                gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
-                tensor_parallel_size = self.args.vllm_tensor_parallel_size
-                device = self.args.vllm_device
-                
-                # 获取基础设备 ID 并生成设备列表
-                base_device_id = int(device.split(':')[1])
-                devices = list(range(base_device_id, base_device_id + tensor_parallel_size))
-                
-                # 设置 CUDA_VISIBLE_DEVICES 来限制 vLLM 只能看到指定的 GPU
-                os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(map(str, devices))
-                
-                # 确保我们在正确的设备上
-                if torch.cuda.current_device() != base_device_id:
-                    torch.cuda.set_device(base_device_id)
-                
-                # 设置 vLLM 的分布式环境
-                if dist.is_initialized():
-                    rank = dist.get_rank()
-                    local_rank = self.accelerator.local_process_index
-                    
-                    # 为 vLLM 设置独立的分布式环境变量
-                    os.environ['RANK'] = str(local_rank)  # 使用 local_rank 作为 vLLM 的 rank
-                    os.environ['WORLD_SIZE'] = str(tensor_parallel_size)
-                    os.environ['LOCAL_RANK'] = str(local_rank)
-                    os.environ['MASTER_ADDR'] = '127.0.0.1'
-                    os.environ['MASTER_PORT'] = '29500'
-                    
-                    # 清理已有的分布式环境（如果有）
-                    if dist.is_initialized():
-                        dist.destroy_process_group()
-                    
-                    # 为 vLLM 初始化新的分布式环境
-                    dist.init_process_group(
-                        backend='nccl',
-                        init_method='env://',
-                        world_size=tensor_parallel_size,
-                        rank=local_rank
-                    )
-                    
-                    logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}, "
-                              f"devices={devices}, rank={local_rank}, world_size={tensor_parallel_size}")
-                else:
-                    logger.warning("Distributed environment not initialized. This might cause issues with vLLM.")
-                
-                self.llm = LLM(
-                    model=self.model.name_or_path,
-                    gpu_memory_utilization=gpu_memory_utilization,
-                    tensor_parallel_size=tensor_parallel_size,
-                    tensor_parallel_devices=devices,
-                    max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
-                    trust_remote_code=True,
-                )
-                logger.info("Successfully initialized vLLM")
-                
-                # 恢复 DeepSpeed 的分布式环境
-                if not dist.is_initialized():
-                    dist.init_process_group(
-                        backend='nccl',
-                        init_method='env://',
-                        world_size=dist.get_world_size(),
-                        rank=rank
-                    )
-                
-            except Exception as e:
-                logger.error(f"Failed to initialize vLLM: {str(e)}")
-                raise
-            
+
     def __del__(self):
         # 清理分布式环境
         if self.use_vllm and dist.is_initialized():
