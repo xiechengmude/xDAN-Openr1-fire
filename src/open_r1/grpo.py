@@ -62,18 +62,32 @@ class CustomGRPOTrainer(GRPOTrainer):
                 
                 # 设置 vLLM 的分布式环境
                 if dist.is_initialized():
-                    world_size = dist.get_world_size()
                     rank = dist.get_rank()
                     local_rank = self.accelerator.local_process_index
                     
-                    os.environ['RANK'] = str(rank)
-                    os.environ['WORLD_SIZE'] = str(world_size)
+                    # 为 vLLM 设置独立的分布式环境变量
+                    os.environ['RANK'] = str(local_rank)  # 使用 local_rank 作为 vLLM 的 rank
+                    os.environ['WORLD_SIZE'] = str(tensor_parallel_size)
                     os.environ['LOCAL_RANK'] = str(local_rank)
                     os.environ['MASTER_ADDR'] = '127.0.0.1'
                     os.environ['MASTER_PORT'] = '29500'
                     
+                    # 清理已有的分布式环境（如果有）
+                    if dist.is_initialized():
+                        dist.destroy_process_group()
+                    
+                    # 为 vLLM 初始化新的分布式环境
+                    dist.init_process_group(
+                        backend='nccl',
+                        init_method='env://',
+                        world_size=tensor_parallel_size,
+                        rank=local_rank
+                    )
+                    
                     logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}, "
-                              f"devices={devices}, rank={rank}, world_size={world_size}, local_rank={local_rank}")
+                              f"devices={devices}, rank={local_rank}, world_size={tensor_parallel_size}")
+                else:
+                    logger.warning("Distributed environment not initialized. This might cause issues with vLLM.")
                 
                 self.llm = LLM(
                     model=self.model.name_or_path,
@@ -84,6 +98,16 @@ class CustomGRPOTrainer(GRPOTrainer):
                     trust_remote_code=True,
                 )
                 logger.info("Successfully initialized vLLM")
+                
+                # 恢复 DeepSpeed 的分布式环境
+                if not dist.is_initialized():
+                    dist.init_process_group(
+                        backend='nccl',
+                        init_method='env://',
+                        world_size=dist.get_world_size(),
+                        rank=rank
+                    )
+                
             except Exception as e:
                 logger.error(f"Failed to initialize vLLM: {str(e)}")
                 raise
