@@ -42,42 +42,41 @@ logger = logging.getLogger(__name__)
 
 class CustomGRPOTrainer(GRPOTrainer):
     def __init__(self, *args, **kwargs):
+        # 在父类初始化前，先设置环境变量
+        tensor_parallel_size = 4  # 固定为4，因为我们使用4个GPU
+        if "RANK" not in os.environ:
+            os.environ["RANK"] = str(int(os.environ.get("LOCAL_RANK", "0")))
+        if "WORLD_SIZE" not in os.environ:
+            os.environ["WORLD_SIZE"] = str(tensor_parallel_size)
+        if "MASTER_ADDR" not in os.environ:
+            os.environ["MASTER_ADDR"] = "localhost"
+        if "MASTER_PORT" not in os.environ:
+            os.environ["MASTER_PORT"] = "29500"
+
         # 禁用父类的 vLLM 初始化
         use_vllm = kwargs.pop('use_vllm', False)
         
-        # 先调用父类初始化，但不初始化 vLLM
+        # 调用父类初始化
         super().__init__(*args, **kwargs)
         
         # 如果需要使用 vLLM，我们自己初始化
         if use_vllm and self.accelerator.is_main_process:
-            try:
-                tensor_parallel_size = kwargs.get('vllm_tensor_parallel_size', 4)
-                device = kwargs.get('vllm_device', 'cuda:4')
-                
-                # 设置 vLLM 的分布式环境
-                if dist.is_initialized():
-                    local_rank = kwargs.get('local_process_index', 0)
-                    os.environ['RANK'] = str(local_rank)
-                    os.environ['WORLD_SIZE'] = str(tensor_parallel_size)
-                    os.environ['LOCAL_RANK'] = str(local_rank)
-                    os.environ['MASTER_ADDR'] = '127.0.0.1'
-                    os.environ['MASTER_PORT'] = '29500'
-                    logger.info(f"Setting up vLLM environment with rank={local_rank}, world_size={tensor_parallel_size}")
-                
-                # 初始化 vLLM
-                self.llm = LLM(
-                    model=self.model.name_or_path,
-                    device=device,
-                    tensor_parallel_size=tensor_parallel_size,
-                    gpu_memory_utilization=kwargs.get('vllm_gpu_memory_utilization', 0.9),
-                    max_model_len=self.args.max_prompt_length + self.args.max_completion_length,
-                    trust_remote_code=True
-                )
-                logger.info("Successfully initialized vLLM")
-                
-            except Exception as e:
-                logger.error(f"Failed to initialize vLLM: {str(e)}")
-                raise
+            device = kwargs.get('vllm_device', 'cuda:4')  # 默认从 cuda:4 开始
+            self.llm = LLM(
+                model=self.model.name_or_path,
+                device=device,
+                tensor_parallel_size=tensor_parallel_size,
+                max_model_len=2048,
+                trust_remote_code=True,
+                enforce_eager=True,
+                max_num_batched_tokens=4096,
+                max_num_seqs=128,
+                enable_lora=True,
+                max_loras=16,
+                max_lora_rank=64,
+                max_cpu_loras=16,
+                gpu_memory_utilization=0.9,
+            )
         
         # 恢复 use_vllm 标志
         self.use_vllm = use_vllm
