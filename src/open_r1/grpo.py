@@ -43,34 +43,30 @@ class CustomGRPOTrainer(GRPOTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.use_vllm:
-            # 只在主进程初始化 vLLM
-            if self.accelerator.is_main_process:
-                try:
-                    gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
-                    tensor_parallel_size = self.args.vllm_tensor_parallel_size
-                    device = self.args.vllm_device
-                    
-                    # 获取基础设备 ID
-                    base_device_id = int(device.split(':')[1])
-                    # 生成所有设备 ID
-                    devices = list(range(base_device_id, base_device_id + tensor_parallel_size))
-                    
-                    logger.info(f"Initializing vLLM with devices {devices}")
-                    
-                    self.llm = LLM(
-                        model=self.model.name_or_path,
-                        gpu_memory_utilization=gpu_memory_utilization,
-                        tensor_parallel_size=tensor_parallel_size,
-                        tensor_parallel_devices=devices,
-                        max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
-                        trust_remote_code=True,
-                    )
-                    logger.info("Successfully initialized vLLM")
-                except Exception as e:
-                    logger.error(f"Failed to initialize vLLM: {str(e)}")
-                    raise
-            # 等待主进程初始化完成
-            self.accelerator.wait_for_everyone()
+            try:
+                gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
+                tensor_parallel_size = self.args.vllm_tensor_parallel_size
+                device = self.args.vllm_device
+                
+                # 获取基础设备 ID
+                base_device_id = int(device.split(':')[1])
+                # 生成所有设备 ID
+                devices = list(range(base_device_id, base_device_id + tensor_parallel_size))
+                
+                logger.info(f"Initializing vLLM with devices {devices}")
+                
+                self.llm = LLM(
+                    model=self.model.name_or_path,
+                    gpu_memory_utilization=gpu_memory_utilization,
+                    tensor_parallel_size=tensor_parallel_size,
+                    tensor_parallel_devices=devices,
+                    max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
+                    trust_remote_code=True,
+                )
+                logger.info("Successfully initialized vLLM")
+            except Exception as e:
+                logger.error(f"Failed to initialize vLLM: {str(e)}")
+                raise
             
     def __del__(self):
         # 清理分布式环境
