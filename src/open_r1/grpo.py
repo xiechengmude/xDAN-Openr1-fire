@@ -60,7 +60,20 @@ class CustomGRPOTrainer(GRPOTrainer):
                 if torch.cuda.current_device() != base_device_id:
                     torch.cuda.set_device(base_device_id)
                 
-                logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}, devices={devices}")
+                # 设置 vLLM 的分布式环境
+                if dist.is_initialized():
+                    world_size = dist.get_world_size()
+                    rank = dist.get_rank()
+                    local_rank = self.accelerator.local_process_index
+                    
+                    os.environ['RANK'] = str(rank)
+                    os.environ['WORLD_SIZE'] = str(world_size)
+                    os.environ['LOCAL_RANK'] = str(local_rank)
+                    os.environ['MASTER_ADDR'] = '127.0.0.1'
+                    os.environ['MASTER_PORT'] = '29500'
+                    
+                    logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}, "
+                              f"devices={devices}, rank={rank}, world_size={world_size}, local_rank={local_rank}")
                 
                 self.llm = LLM(
                     model=self.model.name_or_path,
