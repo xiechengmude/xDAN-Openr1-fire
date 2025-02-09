@@ -44,18 +44,24 @@ class CustomGRPOTrainer(GRPOTrainer):
     def __init__(self, *args, **kwargs):
         # 在父类初始化前，先设置环境变量
         tensor_parallel_size = 4  # 固定为4，因为我们使用4个GPU
-        if "RANK" not in os.environ:
-            os.environ["RANK"] = str(int(os.environ.get("LOCAL_RANK", "0")))
-        if "WORLD_SIZE" not in os.environ:
-            os.environ["WORLD_SIZE"] = str(tensor_parallel_size)
-        if "MASTER_ADDR" not in os.environ:
-            os.environ["MASTER_ADDR"] = "localhost"
-        if "MASTER_PORT" not in os.environ:
-            os.environ["MASTER_PORT"] = "29500"
-
+        
+        # 从 accelerate 获取正确的 rank
+        local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+        world_size = int(os.environ.get("WORLD_SIZE", str(tensor_parallel_size)))
+        
+        # 确保所有进程都设置相同的环境变量
+        os.environ["RANK"] = str(local_rank)
+        os.environ["LOCAL_RANK"] = str(local_rank)
+        os.environ["WORLD_SIZE"] = str(world_size)
+        os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", "localhost")
+        os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
+        
+        # 打印环境变量用于调试
+        print(f"[Rank {local_rank}] Setting up environment: RANK={os.environ['RANK']}, WORLD_SIZE={os.environ['WORLD_SIZE']}, LOCAL_RANK={os.environ['LOCAL_RANK']}")
+        
         # 保存 vLLM 相关参数
         use_vllm = kwargs.get('use_vllm', False)
-        vllm_device = kwargs.get('vllm_device', 'cuda:4')
+        vllm_device = kwargs.get('vllm_device', f'cuda:{4 + local_rank}')  # 根据 local_rank 分配 GPU
         
         # 从 kwargs 中移除 vLLM 相关参数，避免父类处理
         kwargs.pop('use_vllm', None)
@@ -65,7 +71,7 @@ class CustomGRPOTrainer(GRPOTrainer):
         super().__init__(*args, **kwargs)
         
         # 如果需要使用 vLLM，我们自己初始化
-        if use_vllm and self.accelerator.is_main_process:
+        if use_vllm:  # 移除 self.accelerator.is_main_process 检查，让所有进程都初始化
             self.llm = LLM(
                 model=self.model.name_or_path,
                 device=vllm_device,  # 使用保存的参数
