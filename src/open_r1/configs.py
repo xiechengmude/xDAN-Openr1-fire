@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, List
 
 import trl
 
@@ -42,13 +42,19 @@ class GRPOConfig(trl.GRPOConfig):
     push_to_hub_revision: bool = field(default=False, metadata={"help": "Whether to push to a Hub revision/branch."})
     
     # Add vLLM tensor parallel configuration
+    use_vllm: bool = field(default=False, metadata={"help": "Whether to use vLLM."})
     vllm_gpu_memory_utilization: float = field(
         default=0.9,
         metadata={
-            "help": "Ratio (between 0 and 1) of GPU memory to reserve for vLLM."
+            "help": "The fraction of GPU memory to be used by vLLM."
         },
     )
-    
+    vllm_devices: str = field(
+        default="4,5,6,7",
+        metadata={
+            "help": "Comma separated list of GPU devices to use for vLLM, e.g. '4,5,6,7'. This is needed when running with accelerate launch to ensure vLLM can see all required GPUs."
+        },
+    )
     vllm_tensor_parallel_size: int = field(
         default=1,
         metadata={

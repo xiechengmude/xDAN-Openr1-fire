@@ -48,18 +48,18 @@ class CustomGRPOTrainer(GRPOTrainer):
                 try:
                     gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
                     tensor_parallel_size = self.args.vllm_tensor_parallel_size
+                    devices = [int(x.strip()) for x in self.args.vllm_devices.split(',')]
                     
-                    # 确保有足够的 GPU
-                    assert torch.cuda.device_count() >= tensor_parallel_size, \
-                        f"Requested {tensor_parallel_size} GPUs but only {torch.cuda.device_count()} available"
+                    # 验证设备数量
+                    assert len(devices) == tensor_parallel_size, \
+                        f"Number of devices ({len(devices)}) must match tensor_parallel_size ({tensor_parallel_size})"
                     
-                    logger.info(f"Initializing vLLM with tensor_parallel_size={tensor_parallel_size}")
-                    logger.info(f"CUDA devices: {[torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]}")
+                    logger.info(f"Initializing vLLM with devices {devices}")
                     
                     self.llm = LLM(
                         model=self.model.name_or_path,
                         gpu_memory_utilization=gpu_memory_utilization,
-                        tensor_parallel_size=tensor_parallel_size,
+                        tensor_parallel_devices=devices,  # 指定使用哪些 GPU
                         max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
                         trust_remote_code=True,
                     )
