@@ -13,6 +13,7 @@ dataset_configs:
 bf16: true
 use_vllm: true
 vllm_device: cuda:4
+vllm_tensor_parallel_size: 4
 vllm_gpu_memory_utilization: 0.9
 do_eval: true
 eval_strategy: steps
