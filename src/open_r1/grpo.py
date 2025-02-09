@@ -35,7 +35,7 @@ from open_r1.rewards import accuracy_reward, format_reward, get_cosine_scaled_re
 from open_r1.utils.callbacks import get_callbacks
 from trl import GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
 from vllm import LLM  # 添加 vLLM 导入
-
+import torch.distributed as dist
 
 logger = logging.getLogger(__name__)
 
@@ -44,17 +44,31 @@ class CustomGRPOTrainer(GRPOTrainer):
         super().__init__(*args, **kwargs)
         if self.use_vllm and self.accelerator.is_main_process:
             try:
+                # 使用 accelerate 的分布式环境
+                gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
+                tensor_parallel_size = self.args.vllm_tensor_parallel_size
+                
+                # 确保有足够的 GPU
+                assert torch.cuda.device_count() >= tensor_parallel_size, \
+                    f"Requested {tensor_parallel_size} GPUs but only {torch.cuda.device_count()} available"
+                
+                logger.info(f"Initializing vLLM with {tensor_parallel_size} GPUs")
                 self.llm = LLM(
                     model=self.model.name_or_path,
-                    gpu_memory_utilization=self.args.vllm_gpu_memory_utilization,
-                    tensor_parallel_size=self.args.vllm_tensor_parallel_size,
+                    gpu_memory_utilization=gpu_memory_utilization,
+                    tensor_parallel_size=tensor_parallel_size,
                     max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
                     trust_remote_code=True,
                 )
-                logger.info(f"Successfully initialized vLLM with tensor_parallel_size={self.args.vllm_tensor_parallel_size}")
+                logger.info(f"Successfully initialized vLLM with tensor_parallel_size={tensor_parallel_size}")
             except Exception as e:
                 logger.error(f"Failed to initialize vLLM: {str(e)}")
                 raise
+            
+    def __del__(self):
+        # 清理分布式环境
+        if self.use_vllm and self.accelerator.is_main_process and dist.is_initialized():
+            dist.destroy_process_group()
 
 
 @dataclass
