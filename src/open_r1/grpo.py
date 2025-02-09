@@ -42,7 +42,20 @@ logger = logging.getLogger(__name__)
 
 class CustomGRPOTrainer(GRPOTrainer):
     def __init__(self, *args, **kwargs):
+        if kwargs.get('use_vllm', False):
+            # 在父类初始化 vLLM 之前设置必要的环境变量
+            tensor_parallel_size = kwargs.get('vllm_tensor_parallel_size', 4)
+            if dist.is_initialized():
+                local_rank = kwargs.get('local_process_index', 0)
+                os.environ['RANK'] = str(local_rank)
+                os.environ['WORLD_SIZE'] = str(tensor_parallel_size)
+                os.environ['LOCAL_RANK'] = str(local_rank)
+                os.environ['MASTER_ADDR'] = '127.0.0.1'
+                os.environ['MASTER_PORT'] = '29500'
+                logger.info(f"Setting up vLLM environment with rank={local_rank}, world_size={tensor_parallel_size}")
+        
         super().__init__(*args, **kwargs)
+        
         if self.use_vllm:
             try:
                 gpu_memory_utilization = self.args.vllm_gpu_memory_utilization
