@@ -16,9 +16,15 @@ import logging
 import os
 import sys
 from dataclasses import dataclass, field
+from typing import List, Optional, Union
+
+import torch
+from accelerate.utils import set_seed
+from datasets import Dataset, load_dataset
+from peft import AutoPeftModelForCausalLM
+from transformers import AutoTokenizer, HfArgumentParser, TrainingArguments
 
 import datasets
-import torch
 import transformers
 from datasets import load_dataset
 from transformers import set_seed
@@ -28,9 +34,27 @@ from open_r1.configs import GRPOConfig
 from open_r1.rewards import accuracy_reward, format_reward, get_cosine_scaled_reward, reasoning_steps_reward
 from open_r1.utils.callbacks import get_callbacks
 from trl import GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
+from vllm import LLM  # 添加 vLLM 导入
 
 
 logger = logging.getLogger(__name__)
+
+class CustomGRPOTrainer(GRPOTrainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.use_vllm and self.accelerator.is_main_process:
+            try:
+                self.llm = LLM(
+                    model=self.model.name_or_path,
+                    gpu_memory_utilization=self.args.vllm_gpu_memory_utilization,
+                    tensor_parallel_size=self.args.vllm_tensor_parallel_size,
+                    max_num_batched_tokens=self.args.max_prompt_length + self.args.max_completion_length,
+                    trust_remote_code=True,
+                )
+                logger.info(f"Successfully initialized vLLM with tensor_parallel_size={self.args.vllm_tensor_parallel_size}")
+            except Exception as e:
+                logger.error(f"Failed to initialize vLLM: {str(e)}")
+                raise
 
 
 @dataclass
@@ -172,7 +196,7 @@ def main(script_args, training_args, model_args):
     #############################
     # Initialize the GRPO trainer
     #############################
-    trainer = GRPOTrainer(
+    trainer = CustomGRPOTrainer(
         model=model_args.model_name_or_path,
         reward_funcs=reward_funcs,
         args=training_args,

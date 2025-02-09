@@ -40,6 +40,21 @@ class GRPOConfig(trl.GRPOConfig):
     )
     overwrite_hub_revision: bool = field(default=False, metadata={"help": "Whether to overwrite the Hub revision."})
     push_to_hub_revision: bool = field(default=False, metadata={"help": "Whether to push to a Hub revision/branch."})
+    
+    # Add vLLM tensor parallel configuration
+    vllm_gpu_memory_utilization: float = field(
+        default=0.9,
+        metadata={
+            "help": "Ratio (between 0 and 1) of GPU memory to reserve for vLLM."
+        },
+    )
+    
+    vllm_tensor_parallel_size: int = field(
+        default=1,
+        metadata={
+            "help": "Number of GPUs to use for tensor parallelism in vLLM."
+        },
+    )
 
 
 @dataclass

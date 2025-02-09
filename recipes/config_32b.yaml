@@ -1,0 +1,49 @@
+# Model arguments
+model_name_or_path: /data/vayu/train/models/xDAN-L2-Qwen25-32b-Instruct
+model_revision: main
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+
+# Data training arguments
+dataset_name: AI-MO/NuminaMath-TIR
+dataset_configs:
+- all
+# Using 4 GPUs for training
+num_processes: 4
+
+# GRPO trainer config
+bf16: true
+use_vllm: true
+vllm_gpu_memory_utilization: 0.9  # 如果出现 OOM 可以调低这个值
+vllm_tensor_parallel_size: 4  # 使用4卡并行
+
+# Training settings
+do_eval: true
+eval_strategy: steps
+eval_steps: 100
+gradient_accumulation_steps: 32  # Increased for large model
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+hub_model_id: Qwen2.5-32B-Open-R1-GRPO
+hub_strategy: every_save
+learning_rate: 5.0e-06  # Reduced for stability
+log_level: info
+logging_steps: 5
+logging_strategy: steps
+lr_scheduler_type: cosine
+max_prompt_length: 512
+max_completion_length: 512  # Reduced for memory
+max_steps: -1
+num_generations: 2  # Reduced for memory
+num_train_epochs: 1
+output_dir: data/Qwen2.5-32B-Open-R1-GRPO
+overwrite_output_dir: true
+per_device_eval_batch_size: 1   
+per_device_train_batch_size: 1  # Reduced for large model
+push_to_hub: true
+report_to:
+- wandb
+save_strategy: "no"
+seed: 42
+warmup_ratio: 0.1
