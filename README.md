@@ -1,5 +1,25 @@
 # Open R1
 
+"upstream"的主要用途是：
+
+保持同步 - 它允许您获取原始仓库的最新更改，并将这些更改合并或重置到您的本地分支中。
+跟踪原始项目 - 您可以轻松查看原始项目的开发进度，了解有哪些新功能或修复。
+提交贡献 - 如果您想向原始项目提交贡献（如Pull Request），您需要先确保您的代码是基于原始仓库的最新版本。
+这样，您的fork仓库的main分支现在与原始仓库的main分支代码完全一致了。
+
+如果您以后需要再次同步，只需重复以下步骤：
+# 获取原始仓库的最新更改
+git fetch upstream
+
+# 将原始仓库的更改合并到您的本地分支
+git merge upstream/main
+
+# 或者，如您所做的，将您的分支重置为与原始仓库完全一致
+git reset --hard upstream/main
+
+
+
+
 *A fully open reproduction of DeepSeek-R1. This repo is a work in progress, let's build it together!*
 
 **Table of Contents**  
