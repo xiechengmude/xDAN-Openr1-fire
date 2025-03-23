@@ -60,6 +60,11 @@ We will use the DeepSeek-R1 [tech report](https://github.com/deepseek-ai/DeepSee
     <img src="assets/plan-of-attack.png" width="500">
 </center>
 
+## News 🗞️
+
+* **⚡️ [2025/03/11] [(update #3)](https://huggingface.co/blog/open-r1/update-3):** We release the [**CodeForces-CoTs**](https://huggingface.co/datasets/open-r1/codeforces-cots) dataset of 10k competitive programming problems and 100k solutions distilled from R1. We also release IOI24: a new benchmark of _very_ hard problems from international olympiads. A 7B Qwen model trained on CodeForces-CoTs can outperform Claude 3.7 Sonnet on IOI24, while a 32B model can outperform R1 itself.
+* **∞ [2025/02/10] [(update #2)](https://huggingface.co/blog/open-r1/update-2):** We release the [**OpenR1-Math-220k**](https://huggingface.co/datasets/open-r1/OpenR1-Math-220k) dataset of 220k traces distilled from R1 on a new version of NuminaMath. Models trained on this dataset match the performance of DeepSeek's distilled ones.
+* **🔥 [2025/02/02] [(update #1)](https://huggingface.co/blog/open-r1/update-1):** We implement the first parts of the [training](https://github.com/huggingface/open-r1?tab=readme-ov-file#training-models), [inference](https://github.com/huggingface/open-r1?tab=readme-ov-file#data-generation), and [evaluation](https://github.com/huggingface/open-r1?tab=readme-ov-file#reproducing-deepseeks-evaluation-results) pipelines. Let's go!  
 
 ## Installation
 
@@ -71,7 +76,7 @@ To install `uv`, follow the [UV Installation Guide](https://docs.astral.sh/uv/ge
 
 
 > [!NOTE]
-> As a shortcut, run `make install` to setup development libraries (spelled out below). Afterwards if everything is setup correctly and you have a functioning CUDA, you can install `flash-attn` and try out the Open-R1 models.
+> As a shortcut, run `make install` to setup development libraries (spelled out below). Afterwards, if everything is setup correctly you can try out the Open-R1 models.
 
 
 ```shell
@@ -234,6 +239,21 @@ ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_con
     --num_processes=7 src/open_r1/grpo.py \
     --config recipes/Qwen2.5-1.5B-Instruct/grpo/config_demo_code.yaml
 ```
+
+#### IOI problems
+
+We provide a `ioi_code_reward` reward function for executing problems from [IOI](https://hf.co/datasets/open-r1/ioi) using [piston](https://github.com/engineer-man/piston).
+
+To get piston workers running, see [slurm/piston/README.md](./slurm/piston/README.md).
+Set your environment variable `PISTON_ENDPOINTS` to `slurm` or to a list of piston worker endpoints.
+
+See the [example recipe](./recipes/Qwen2.5-1.5B-Instruct/grpo/config_demo_code_ioi.yaml) for how to use the reward function:
+```shell
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/zero2.yaml \
+    --num_processes=7 src/open_r1/grpo.py \
+    --config recipes/Qwen2.5-1.5B-Instruct/grpo/config_demo_code_ioi.yaml
+```
+
 
 #### Data decontamination
 
@@ -482,7 +502,7 @@ python scripts/run_benchmarks.py --model-id {model_id}  --benchmarks gpqa
 
 We are able to reproduce Deepseek's reported results on the LiveCodeBench code generation benchmark within ~1-3 standard deviations:
 
-| Model                         | LiveCodeBench (🤗 LightEval) | GPQA Diamond (DeepSeek Reported) |
+| Model                         | LiveCodeBench (🤗 LightEval) | LiveCodeBench (DeepSeek Reported) |
 |:------------------------------|:----------------------------:|:--------------------------------:|
 | DeepSeek-R1-Distill-Qwen-1.5B |             16.3             |               16.9               |
 | DeepSeek-R1-Distill-Qwen-7B   |             36.6             |               37.6               |
@@ -598,3 +618,21 @@ sbatch slurm/generate.slurm \
 ## Contributing
 
 Contributions are welcome. Please refer to https://github.com/huggingface/open-r1/issues/23.
+
+## Acknowledgements
+
+This project is built with the collective efforts of many groups and individuals in the open AI community. We are especially grateful to the vLLM and SGLang teams for creating high-performance tooling to scale the rollouts of GRPO. We also thank the teams at [OpenThoughts](https://www.open-thoughts.ai), [Prime Intellect](https://www.primeintellect.ai), and [General Reasoning](https://gr.inc) for creating and sharing high-quality datasets for reasoning.
+
+## Citation
+
+If you find this project is useful in your own work, please consider citing as follows:
+
+```
+@misc{openr1,
+    title = {Open R1: A fully open reproduction of DeepSeek-R1},
+    url = {https://github.com/huggingface/open-r1},
+    author = {Hugging Face},
+    month = {January},
+    year = {2025}
+}
+```
